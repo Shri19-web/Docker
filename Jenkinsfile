@@ -19,8 +19,8 @@ pipeline {
                 script {
                     COMMIT_HASH = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     env.IMAGE_TAG = "${COMMIT_HASH}"
+                    echo "Using Git commit hash as tag: ${IMAGE_TAG}"
                 }
-                echo "Using Git commit hash as tag: ${latest}"
             }
         }
 
@@ -29,7 +29,7 @@ pipeline {
                 script {
                     echo "Building Docker image..."
                     sh """
-                        docker build -t ${my_ubuntu}:${latest} -t ${my_ubuntu}:latest .
+                        docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} -t ${DOCKER_IMAGE}:latest .
                     """
                 }
             }
@@ -38,8 +38,8 @@ pipeline {
         stage('Authenticate to Docker Registry') {
             steps {
                 echo "Logging into Docker Hub..."
-                withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", usernameVariable: '131924', passwordVariable: '123443321')]) {
-                    sh 'echo "$123443321" | docker login -u "$131924" --password-stdin'
+                withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                 }
             }
         }
@@ -48,8 +48,8 @@ pipeline {
             steps {
                 echo "Pushing Docker image to registry..."
                 sh """
-                    docker push ${my_ubuntu}:${latest}
-                    docker push ${my_ubuntu}:latest
+                    docker push ${DOCKER_IMAGE}:${IMAGE_TAG}
+                    docker push ${DOCKER_IMAGE}:latest
                 """
             }
         }
@@ -57,7 +57,7 @@ pipeline {
 
     post {
         success {
-            echo "Docker image pushed successfully: ${my_ubuntu}:${latest}"
+            echo "Docker image pushed successfully: ${DOCKER_IMAGE}:${IMAGE_TAG}"
         }
         failure {
             echo "Jenkins pipeline failed. Check logs for errors."
