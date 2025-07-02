@@ -2,7 +2,7 @@ pipeline {
     agent { label 'docker' }
 
     environment {
-        DOCKER_REPO_CREDENTIALS = '12345V'
+        DOCKER_REPO_CREDENTIALS = '42dce61d-a001-4e2f-833e-f1b881bf9170'
         DOCKER_IMAGE = '131924/docker'          
         GIT_REPO = 'https://github.com/Shri19-web/Docker.git'
         BRANCH = 'main'
